@@ -2,7 +2,7 @@ import "./App.css";
 import io from "socket.io-client";
 import { useState } from "react";
 import Chat from "./Chat";
-
+import {nanoid} from "nanoid"
 
 const socket = io.connect("http://localhost:3001");
 
@@ -14,7 +14,8 @@ function App() {
 
   const joinRoom = () => {
     if (username !== "" && room !== "") {
-      const joinData = { room, username }
+
+      const joinData = { room, username}
       socket.emit("join_room", joinData);
       setShowChat(true);
     }

@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import ScrollToBottom from "react-scroll-to-bottom";
 import Container from "./components/container/Container";
 
-function Chat({ socket, username, room }) {
+
+function Chat({ socket, username, userId, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
   const [messageList, setMessageList] = useState([]);
   const [user,setUser]=useState(username);
-
+  const [roomUsersData, setRoomUsersData] = useState({})
  
 
   const sendMessage = async () => {
@@ -30,13 +31,26 @@ function Chat({ socket, username, room }) {
   useEffect(() => {
     socket.on("receive_message", (data) => {
       setMessageList((list) => [...list, data]);
-      
     });
   }, [socket]);
 
+  socket.on("active", (data) => {
+    handleOnlineUsers(data);
+  })
+  
   socket.on('back', data => {
     console.log(data)
   })
+
+  const handleOnlineUsers = (data) => {
+    let userId = data?.userId;
+      // console.log(roomUsersData)
+      let tempRoomUsersData = {...roomUsersData};
+      let onlineStatus = data?.isOnline ;
+      tempRoomUsersData[userId] = {'online':onlineStatus}
+      console.log(tempRoomUsersData)
+      setRoomUsersData(tempRoomUsersData)
+  }
 
   return (
     <div className="main-page">
@@ -47,6 +61,8 @@ function Chat({ socket, username, room }) {
         <div className="chat-body">
           <ScrollToBottom className="message-container">
             {messageList.map((messageContent) => {
+              let userId = messageContent?.['userId']
+              console.log(messageContent)
               return (
                 <div
                   className="message"
@@ -56,6 +72,9 @@ function Chat({ socket, username, room }) {
                     <div className="message-content">
                       <p id="author">{messageContent.author}</p>
                       <p id="author1">{messageContent.message}</p>
+                      {
+                        roomUsersData?.[userId]?.['online'] ? <p className="green-dot"><i class="ph-circle-fill"></i></p> : null
+                      }
                     </div>
                     <div className="message-meta">
                       <p id="time">{messageContent.time}</p>

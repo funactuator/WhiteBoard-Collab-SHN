@@ -35,11 +35,13 @@ io.on("connection", (socket) => {
         ":" +
         new Date(Date.now()).getMinutes(),
     };
+    handleOnline(socket.id, true, socket) //user id, online
     socket.to(data.room).emit("receive_message", messageData);
   });
 
   socket.on("send_message", (data) => {
-    socket.to(data.room).emit("receive_message", data);
+    let sendData = {...data, 'userId':socket.id}
+    socket.to(data.room).emit("receive_message", sendData);
   });
 
   socket.on("disconnect", () => {
@@ -53,7 +55,9 @@ io.on("connection", (socket) => {
         ":" +
         new Date(Date.now()).getMinutes(),
     };
+    handleOnline(socket.id, false, socket)
     socket.to(socket.data.room).emit("receive_message", messageData);
+
   });
 
   socket.on('canvas-data', (data) => {
@@ -65,3 +69,8 @@ io.on("connection", (socket) => {
 server.listen(3001, () => {
   console.log("SERVER RUNNING");
 });
+
+const handleOnline = async(Id, online, socket) => {
+  let onlineData = {userId:Id, isOnline : online}
+  await socket.to(socket.data.room).emit("active", onlineData);
+}
